@@ -1,0 +1,4 @@
+pomodoro.db
+/__pycache__
+/components/__pycache__
+/database/__pycache__
