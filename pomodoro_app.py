@@ -224,7 +224,7 @@ class PomodoroTimer(QMainWindow):
                 background-color: #000000;
             }
             QWidget {
-                background-color: #1E1E1E;
+                background-color: #000000;
                 color: #E0E0E0;
             }
             QPushButton {
