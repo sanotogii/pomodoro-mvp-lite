@@ -12,14 +12,27 @@ from components.circular_progress import CircularProgressBar
 from components.stats_widget import StatsWidget
 from components.completion_dialog import CompletionDialog
 from database.db_manager import DatabaseManager
+from PyQt6.QtMultimedia import QSoundEffect
+from PyQt6.QtCore import QUrl
+import os
 
 class PomodoroTimer(QMainWindow):
     def __init__(self):
         super().__init__()
         self.db = DatabaseManager()
+        self.setupSounds()
         self.initUI()
         self.setupSystemTray()
         
+    def setupSounds(self):
+        self.timer_sound = QSoundEffect()
+        sound_path = os.path.join(os.path.dirname(__file__), 'assets', 'notification.wav')
+        self.timer_sound.setSource(QUrl.fromLocalFile(sound_path))
+        self.timer_sound.setVolume(1.0)
+
+    def playTimerEndSound(self):
+        self.timer_sound.play()
+
     def initUI(self):
         self.setWindowTitle('Pomodoro Timer')
         self.setStyleSheet(self.getStyleSheet())
@@ -117,7 +130,7 @@ class PomodoroTimer(QMainWindow):
 
     def setupSystemTray(self):
         self.tray_icon = QSystemTrayIcon(self)
-        self.tray_icon.setIcon(QIcon("icon.png"))  # I will do this later
+        self.tray_icon.setIcon(QIcon("assets/icon.png"))  # I will do this later
         
         tray_menu = QMenu()
         show_action = tray_menu.addAction("Show")
@@ -167,7 +180,10 @@ class PomodoroTimer(QMainWindow):
             self.timer.stop()
             self.is_active = False
             self.db.end_session(True)
+            self.playTimerEndSound()
+            self.forceToFront()
             self.showCompletionDialog()
+
     def forceToFront(self):
         # Show and activate the window
         self.show()
@@ -188,21 +204,6 @@ class PomodoroTimer(QMainWindow):
         
         # Flash the taskbar icon
         win32gui.FlashWindow(hwnd, True)
-
-    def updateTimer(self):
-        if self.remaining_time > 0:
-            self.remaining_time -= 1
-            minutes = self.remaining_time // 60
-            seconds = self.remaining_time % 60
-            self.progress_bar.setTimerText(f"{minutes:02d}:{seconds:02d}")
-            progress = 1 - (self.remaining_time / self.total_time)
-            self.progress_bar.setProgress(progress)
-        else:
-            self.timer.stop()
-            self.is_active = False
-            self.db.end_session(True)
-            self.forceToFront()  # Force window to front when timer ends
-            self.showCompletionDialog()
 
     def showCompletionDialog(self):
         dialog = CompletionDialog(self)
