@@ -8,7 +8,7 @@ This is my working Pomodoro timer that I'll be using while learning Next.js at m
 - Serve my needs while I take time to properly learn Next.js
 
 <p align="center">
-  <img src="assets/screenshot.jpg" alt="Pomodoro Timer Screenshot" width="500">
+  <img src="assets/screenshot.jpg" alt="Pomodoro Timer Screenshot" width="600">
 </p>
 
 ## Features
