@@ -22,10 +22,10 @@ class CircularProgressBar(QWidget):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         # Draw circle
-        pen = QPen(QColor("#FFFFFF"))
-        pen.setWidth(3)
+        pen = QPen(QColor("#454545"))
+        pen.setWidth(5)
         painter.setPen(pen)
-        
+
         width = self.width()
         height = self.height()
         margin = 10
@@ -36,14 +36,17 @@ class CircularProgressBar(QWidget):
 
         # Progress arc
         if self.progress > 0:
-            pen.setColor(QColor("#E0E0E0"))
+            pen.setColor(QColor("#4CAF50"))  # Green color for progress
+            pen.setWidth(5)
             painter.setPen(pen)
-            span = int(360 * self.progress)
-            painter.drawArc(rect, 90 * 16, -span * 16)
+            # Arc starts from 90 degrees (top) and moves clockwise
+            # Convert progress (0-1) to degrees (0-360) and multiply by 16 (Qt requirement)
+            span = int(-360 * self.progress * 16)  # Negative for clockwise
+            painter.drawArc(rect, 90 * 16, span)
 
-        # Timer text with larger font
+        # Timer text
         font = painter.font()
-        font.setPointSize(min(width, height) // 9)  # Proportional to widget size
+        font.setPointSize(min(width, height) // 9)
         font.setBold(True)
         painter.setFont(font)
         painter.setPen(QColor("#E0E0E0"))
