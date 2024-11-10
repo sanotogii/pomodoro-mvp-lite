@@ -90,3 +90,25 @@ class DatabaseManager:
             AND completed_status IS NULL
         ''', (datetime.now(), completed))
         self.conn.commit()
+
+    def get_stats_for_date(self, date):
+        query = """
+            SELECT 
+                COUNT(*) as completed_sessions,
+                COALESCE(SUM(
+                    CAST(
+                        (strftime('%s', end_time) - strftime('%s', start_time))/60 
+                    AS INTEGER)
+                ), 0) as total_minutes
+        FROM sessions 
+        WHERE DATE(start_time) = DATE(?)
+        AND completed_status = 1
+        AND session_type = 'focus'
+        AND end_time IS NOT NULL
+    """
+        self.cursor.execute(query, (date,))
+        result = self.cursor.fetchone()
+        return {
+            'completed_sessions': result[0],
+            'total_minutes': result[1] or 0
+        }
