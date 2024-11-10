@@ -1,8 +1,9 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QFrame
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QDialog
 from PyQt6.QtCore import Qt
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, FigureCanvasQTAgg as FigureCanvas
 from datetime import datetime, timedelta
+from matplotlib.figure import Figure
 
 class StatsWidget(QWidget):
     def __init__(self, db_manager, parent=None):
@@ -62,6 +63,11 @@ class StatsWidget(QWidget):
         layout.addWidget(self.today_label)
         layout.addWidget(self.pomodoros_label)
 
+        # Add weekly stats button
+        weekly_stats_btn = QPushButton("View Weekly Stats")
+        weekly_stats_btn.clicked.connect(self.show_weekly_stats)
+        layout.addWidget(weekly_stats_btn)
+
         # Configure matplotlib style
         plt.style.use('dark_background')
         fig, ax = plt.subplots(facecolor='#1E1E1E')
@@ -111,7 +117,65 @@ class StatsWidget(QWidget):
         for bar in bars:
             height = bar.get_height()
             ax.text(bar.get_x() + bar.get_width()/2., height,
-                   f'{int(height)}m', ha='center', va='bottom', color='#E0E0E0')
+                   self.format_duration(height), 
+                   ha='center', va='bottom', color='#E0E0E0')
         
         plt.tight_layout()
         self.canvas.draw()
+
+    def show_weekly_stats(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Weekly Focus Time")
+        dialog.setMinimumSize(600, 400)
+        dialog_layout = QVBoxLayout(dialog)
+        
+        # Get weekly stats
+        today = datetime.now().date()
+        days = [(today - timedelta(days=i)) for i in range(6, -1, -1)]
+        stats = [self.db.get_stats_for_date(day) for day in days]
+        minutes = [stat['total_minutes'] if stat else 0 for stat in stats]
+        day_names = [day.strftime('%A') for day in days]
+        
+        # Create figure with dark theme
+        fig = Figure(figsize=(8, 5), facecolor='#1E1E1E')
+        canvas = FigureCanvas(fig)
+        ax = fig.add_subplot(111)
+        ax.set_facecolor('#2E2E2E')
+        
+        # Create styled bar chart
+        bars = ax.bar(day_names, minutes, color='#4CAF50', alpha=0.7)
+        ax.set_ylabel('Focus Time (mins/hours)', color='#E0E0E0')
+        
+        # Style the plot
+        ax.spines['bottom'].set_color('#E0E0E0')
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_color('#E0E0E0')
+        ax.tick_params(colors='#E0E0E0')
+        
+        plt.setp(ax.get_xticklabels(), rotation=45, ha='right', color='#E0E0E0')
+        
+        # Add value labels with smart formatting
+        for bar in bars:
+            minutes = bar.get_height()
+            if minutes < 60:  # Less than an hour
+                label = f"{int(minutes)}m"
+            else:  # Convert to hours
+                hours = minutes / 60
+                label = f"{hours:.1f}h"
+            
+            ax.text(bar.get_x() + bar.get_width()/2., minutes,
+                   label, ha='center', va='bottom', color='#E0E0E0')
+        
+        plt.tight_layout()
+        dialog_layout.addWidget(canvas)
+        dialog.exec()
+
+    def format_duration(self, minutes):
+        if minutes < 60:
+            return f"{int(minutes)}m"
+        else:
+            hours = minutes / 60
+            if hours.is_integer():
+                return f"{int(hours)}h"
+            return f"{hours:.1f}h"
