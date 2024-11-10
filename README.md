@@ -12,13 +12,13 @@ This is my working Pomodoro timer that I'll be using while learning Next.js at m
 </p>
 
 ## Features
+- 🌊 Flexible sessions that adapt to your flow state
+- 💫 pomodoro window will pop above the window you are currently using, incase you didn't hear notification and we also sometimes start the pomodoro and forget about it.
 - 🎯 Customizable timer duration (1-120 minutes)
 - ⚡ Quick preset buttons (25 and 50 minutes)
 - 🌙 Dark mode interface
 - 📈 Visual progress tracking
-- 🌊 Flexible sessions that adapt to your flow state
 - 🔈 notifications added
-- 💫 pomodoro window will pop above the window you are currently using, incase you didn't hear notification and we also sometimes start the pomodoro and forget about it.
 - 📅 weekly stats
 <p align="center">
   <img src="assets/week_focus_time.png" alt="Weekly stats Screenshot" width="600">
