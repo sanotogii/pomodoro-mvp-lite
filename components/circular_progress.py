@@ -1,5 +1,5 @@
-from PyQt6.QtWidgets import QWidget
-from PyQt6.QtCore import Qt, QRect
+from PyQt6.QtWidgets import QWidget, QSizePolicy
+from PyQt6.QtCore import Qt, QRect, QSize
 from PyQt6.QtGui import QPainter, QColor, QPen
 
 class CircularProgressBar(QWidget):
@@ -8,6 +8,33 @@ class CircularProgressBar(QWidget):
         self.progress = 0
         self.timer_text = "00:00"
         self.setMinimumSize(300, 300)
+        
+        # Setting size policy to maintain aspect ratio
+        self.setSizePolicy(
+            QSizePolicy.Policy.MinimumExpanding,
+            QSizePolicy.Policy.MinimumExpanding
+        )
+
+    def hasHeightForWidth(self):
+        return True
+
+    def heightForWidth(self, width):
+        # Maintaining 1:1 aspect ratio
+        return width
+
+    def sizeHint(self):
+        # Default square size
+        return QSize(300, 300)
+
+    def resizeEvent(self, event):
+        side = min(self.width(), self.height())
+        self.setGeometry(
+            self.x() + (self.width() - side) // 2,
+            self.y() + (self.height() - side) // 2,
+            side,
+            side
+        )
+        super().resizeEvent(event)
 
     def setProgress(self, value):
         self.progress = value
