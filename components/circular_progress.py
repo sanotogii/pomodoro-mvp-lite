@@ -39,8 +39,12 @@ class CircularProgressBar(QWidget):
             pen.setColor(QColor("#4CAF50"))  # Green color for progress
             pen.setWidth(5)
             painter.setPen(pen)
-            # Arc starts from 90 degrees (top) and moves clockwise
-            # Convert progress (0-1) to degrees (0-360) and multiply by 16 (Qt requirement)
+            # Arc starts at 90° (top) and moves clockwise. Qt uses a coordinate system where:
+            # - 0° points right (3 o'clock position)
+            # - 90° points up (12 o'clock position) 
+            # - Angles increase counter-clockwise
+            # Qt requires angles in 1/16th of a degree units, so we multiply by 16
+            # Example: 90° * 16 = 1440 units in Qt's system
             span = int(-360 * self.progress * 16)  # Negative for clockwise
             painter.drawArc(rect, 90 * 16, span)
 
