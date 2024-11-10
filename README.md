@@ -21,7 +21,7 @@ This is my working Pomodoro timer that I'll be using while learning Next.js at m
 - 💫 pomodoro window will pop above the window you are currently using, incase you didn't hear notification
 - 📅 weekly stats
 <p align="center">
-  <img src="assets/week_focus_time.png" alt="Pomodoro Timer Screenshot" width="600">
+  <img src="assets/week_focus_time.png" alt="Weekly stats Screenshot" width="600">
 </p>
 
 ## Requirements
