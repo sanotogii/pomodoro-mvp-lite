@@ -32,6 +32,22 @@ class DatabaseManager:
         today = datetime.now().date()
         today_str = today.strftime('%Y-%m-%d')
         
+        # First check if we have any sessions today
+        check_query = '''
+            SELECT COUNT(*) 
+            FROM sessions 
+            WHERE date(start_time) = ?
+        '''
+        self.cursor.execute(check_query, (today_str,))
+        has_sessions = self.cursor.fetchone()[0] > 0
+
+        if not has_sessions:
+            return {
+                'completed_sessions': 0,
+                'total_minutes': 0
+            }
+
+        # If we have sessions, get the stats
         query = '''
             SELECT 
                 COUNT(*) as completed_sessions,
