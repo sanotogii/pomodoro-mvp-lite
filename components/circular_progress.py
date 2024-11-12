@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QSizePolicy
 from PyQt6.QtCore import Qt, QRect, QSize
-from PyQt6.QtGui import QPainter, QColor, QPen
+from PyQt6.QtGui import QPainter, QColor, QPen, QFontDatabase
+import os
 
 class CircularProgressBar(QWidget):
     def __init__(self, parent=None):
@@ -63,22 +64,17 @@ class CircularProgressBar(QWidget):
 
         # Progress arc
         if self.progress > 0:
-            pen.setColor(QColor("#4CAF50"))  # Green color for progress
+            pen.setColor(QColor("#4CAF50"))
             pen.setWidth(5)
             painter.setPen(pen)
-            # Arc starts at 90° (top) and moves clockwise. Qt uses a coordinate system where:
-            # - 0° points right (3 o'clock position)
-            # - 90° points up (12 o'clock position) 
-            # - Angles increase counter-clockwise
-            # Qt requires angles in 1/16th of a degree units, so we multiply by 16
-            # Example: 90° * 16 = 1440 units in Qt's system
-            span = int(-360 * self.progress * 16)  # Negative for clockwise
+            span = int(-360 * self.progress * 16)
             painter.drawArc(rect, 90 * 16, span)
 
-        # Timer text
+        # Timer text with font
         font = painter.font()
-        font.setPointSize(min(width, height) // 9)
-        font.setBold(True)
+        font.setFamily("SF Compact Display")
+        font.setPointSize(min(width, height) // 7)
+        font.setBold(False)
         painter.setFont(font)
         painter.setPen(QColor("#E0E0E0"))
         painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, self.timer_text)
