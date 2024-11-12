@@ -86,9 +86,10 @@ class StatsWidget(QWidget):
             f"⏱️ Total Focus Time: {today_stats['total_minutes']} minutes"
         )
         
-        # Get only today's data
+        # Get today's data with modern date format
         today = datetime.now().date()
-        data = [{'date': today.strftime('%Y-%m-%d'), 
+        date_label = f"{today.strftime('%b %d')}\n{today.strftime('%a')}"
+        data = [{'date': date_label, 
                  'total_minutes': today_stats['total_minutes']}]
         
         self.canvas.figure.clear()
@@ -102,7 +103,7 @@ class StatsWidget(QWidget):
         
         # Customize the plot
         ax.set_title('Today\'s Focus Time', color='#E0E0E0', pad=20, fontsize=14)
-        ax.set_xlabel('Date', color='#E0E0E0', labelpad=10)
+        # ax.set_xlabel('Date', color='#E0E0E0', labelpad=10)
         ax.set_ylabel('Minutes', color='#E0E0E0', labelpad=10)
         
         # Style the grid
@@ -112,9 +113,8 @@ class StatsWidget(QWidget):
         ax.spines['right'].set_visible(False)
         ax.spines['left'].set_color('#E0E0E0')
         
-        # Style the ticks
         ax.tick_params(colors='#E0E0E0', which='both')
-        plt.xticks(rotation=45, ha='right')
+        plt.setp(ax.get_xticklabels(), rotation=0, ha='center')
         
         # Add value label on the bar
         for bar in bars:
@@ -138,7 +138,7 @@ class StatsWidget(QWidget):
         stats = [self.db.get_stats_for_date(day) for day in days]
         minutes = [stat['total_minutes'] if stat else 0 for stat in stats]
         
-        # Modern date format: "Mar 18" with weekday
+        # Modern date format
         day_names = [f"{day.strftime('%b %d')}\n{day.strftime('%a')}" for day in days]
         
         # Create figure with dark theme
