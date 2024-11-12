@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                             QPushButton, QSlider, QLabel, QSystemTrayIcon, 
                             QMenu, QDialog, QStackedWidget)
 from PyQt6.QtCore import Qt, QTimer, QRect
-from PyQt6.QtGui import QPainter, QColor, QPen, QIcon
+from PyQt6.QtGui import QPainter, QColor, QPen, QIcon, QFontDatabase
 import win32gui
 import win32con
 import win32process
@@ -220,6 +220,9 @@ class PomodoroTimer(QMainWindow):
     @staticmethod
     def getStyleSheet():
         return """
+            * {
+                font-family: "SF Compact Display";
+            }
             QMainWindow {
                 background-color: #000000;
             }
