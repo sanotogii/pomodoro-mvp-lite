@@ -144,7 +144,7 @@ class StatsWidget(QWidget):
         
         # Create styled bar chart
         bars = ax.bar(day_names, minutes, color='#4CAF50', alpha=0.7)
-        ax.set_ylabel('Focus Time (mins/hours)', color='#E0E0E0')
+        ax.set_ylabel('Focus Time (minutes)', color='#E0E0E0')
         
         # Style the plot
         ax.spines['bottom'].set_color('#E0E0E0')
@@ -155,15 +155,10 @@ class StatsWidget(QWidget):
         
         plt.setp(ax.get_xticklabels(), rotation=45, ha='right', color='#E0E0E0')
         
-        # Add value labels with smart formatting
+        # Add value labels using format_duration
         for bar in bars:
             minutes = bar.get_height()
-            if minutes < 60:  # Less than an hour
-                label = f"{int(minutes)}m"
-            else:  # Convert to hours
-                hours = minutes / 60
-                label = f"{hours:.1f}h"
-            
+            label = self.format_duration(minutes)
             ax.text(bar.get_x() + bar.get_width()/2., minutes,
                    label, ha='center', va='bottom', color='#E0E0E0')
         
@@ -172,10 +167,14 @@ class StatsWidget(QWidget):
         dialog.exec()
 
     def format_duration(self, minutes):
-        if minutes < 60:
+        if minutes == 0:
+            return "0m"
+        elif minutes < 60:
             return f"{int(minutes)}m"
         else:
-            hours = minutes / 60
-            if hours.is_integer():
-                return f"{int(hours)}h"
-            return f"{hours:.1f}h"
+            hours = int(minutes // 60)
+            remaining_minutes = int(minutes % 60)
+            if remaining_minutes == 0:
+                return f"{hours}h"
+            else:
+                return f"{hours}h{remaining_minutes}m"
