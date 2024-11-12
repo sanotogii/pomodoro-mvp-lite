@@ -2,9 +2,9 @@ import sqlite3
 from datetime import datetime
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
                             QPushButton, QSlider, QLabel, QSystemTrayIcon, 
-                            QMenu, QDialog, QStackedWidget)
+                            QMenu, QDialog, QStackedWidget, QInputDialog, QMessageBox)
 from PyQt6.QtCore import Qt, QTimer, QRect
-from PyQt6.QtGui import QPainter, QColor, QPen, QIcon, QFontDatabase
+from PyQt6.QtGui import QPainter, QColor, QPen, QIcon, QFontDatabase, QFont
 import win32gui
 import win32con
 import win32process
@@ -19,11 +19,21 @@ import os
 class PomodoroTimer(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.font_family = os.environ.get('POMO_FONT_FAMILY', 'Arial')  # Default to Arial
+        self.loadFonts()
         self.db = DatabaseManager()
         self.setupSounds()
         self.initUI()
         self.setupSystemTray()
+        self.session_goal = ""
         
+    def loadFonts(self):
+        font_dir = os.path.join(os.path.dirname(__file__), 'assets', 'font')
+        if os.path.exists(font_dir):
+            for font_file in os.listdir(font_dir):
+                if font_file.endswith(('.ttf', '.otf')):
+                    QFontDatabase.addApplicationFont(os.path.join(font_dir, font_file))
+
     def setupSounds(self):
         self.timer_sound = QSoundEffect()
         sound_path = os.path.join(os.path.dirname(__file__), 'assets', 'notification.wav')
@@ -76,10 +86,22 @@ class PomodoroTimer(QMainWindow):
         self.progress_bar = CircularProgressBar()
         self.timer_layout.addWidget(self.progress_bar)
 
+        # Create font for all buttons
+        button_font = QFont(self.font_family, 10, QFont.Weight.Medium)
+
+        # Add goal button
+        self.goal_button = QPushButton("Set Goal")
+        self.goal_button.setFont(button_font)
+        self.goal_button.setObjectName("controlButton")
+        self.goal_button.clicked.connect(self.setSessionGoal)
+        self.timer_layout.addWidget(self.goal_button)
+
         # Preset buttons
         presets_layout = QHBoxLayout()
         self.btn_25 = QPushButton("25 minutes")
         self.btn_50 = QPushButton("50 minutes")
+        self.btn_25.setFont(button_font)
+        self.btn_50.setFont(button_font)
         self.btn_25.setObjectName("presetButton")
         self.btn_50.setObjectName("presetButton")
         presets_layout.addWidget(self.btn_25)
@@ -161,12 +183,34 @@ class PomodoroTimer(QMainWindow):
         self.is_active = False
 
     def stopTimer(self):
+        if self.is_active:
+            response = QMessageBox.question(
+                self,
+                "End Session",
+                "What would you like to save your progress?",
+                QMessageBox.StandardButton.Save | 
+                QMessageBox.StandardButton.Discard | 
+                QMessageBox.StandardButton.Cancel,
+                QMessageBox.StandardButton.Cancel
+            )
+            
+            if response == QMessageBox.StandardButton.Save:
+                self.db.end_session(True)  # Save as completed
+                self._resetTimer()
+            elif response == QMessageBox.StandardButton.Discard:
+                self.db.end_session(False)  # Save as incomplete
+                self._resetTimer()
+        else:
+            self._resetTimer()
+
+    def _resetTimer(self):
         self.timer.stop()
         self.is_active = False
         self.remaining_time = 0
         self.progress_bar.setProgress(0)
         self.progress_bar.setTimerText("00:00")
-        self.db.end_session(False)
+        self.progress_bar.setGoalText("")
+        self.session_goal = ""
 
     def updateTimer(self):
         if self.remaining_time > 0:
@@ -217,11 +261,18 @@ class PomodoroTimer(QMainWindow):
                 self.setPresetDuration(dialog.duration)
                 self.startTimer()
 
+    def setSessionGoal(self):
+        goal, ok = QInputDialog.getText(self, 'Set Session Goal', 
+                                      'Enter your goal for this session:')
+        if ok and goal:
+            self.session_goal = goal
+            self.progress_bar.setGoalText(goal)
+
     @staticmethod
     def getStyleSheet():
         return """
             * {
-                font-family: "SF Compact Display";
+                font-family: 'SF Compact Display Regular';
             }
             QMainWindow {
                 background-color: #000000;
@@ -231,25 +282,18 @@ class PomodoroTimer(QMainWindow):
                 color: #E0E0E0;
             }
             QPushButton {
+                font-family: 'SF Compact Display Light';
                 background-color: #1E1E1E;
                 border: 1px solid #E0E0E0;
                 padding: 5px;
                 min-width: 70px;
+                font-size: 13px;
             }
             QPushButton:hover {
                 background-color: #2E2E2E;
             }
-            QSlider::groove:horizontal {
-                border: 1px solid #E0E0E0;
-                height: 4px;
-            }
-            QSlider::handle:horizontal {
-                background: #E0E0E0;
-                width: 16px;
-                margin: -6px 0;
-                border-radius: 8px;
-            }
             QPushButton#presetButton {
+                font-family: 'SF Pro Display', Arial;
                 background-color: #2E2E2E;
                 border: 2px solid #4CAF50;
                 border-radius: 15px;
@@ -258,14 +302,6 @@ class PomodoroTimer(QMainWindow):
                 font-weight: bold;
                 font-size: 14px;
             }
-            QPushButton#presetButton:hover {
-                background-color: #3E3E3E;
-                border-color: #45a049;
-            }
-            QPushButton#presetButton:pressed {
-                background-color: #4CAF50;
-                color: white;
-            }
             QPushButton#controlButton {
                 border-radius: 15px;
                 padding: 8px;
@@ -273,7 +309,6 @@ class PomodoroTimer(QMainWindow):
                 font-weight: bold;
                 font-size: 13px;
             }
-            
             QPushButton#controlButton[buttonType="start"] {
                 background-color: #2E2E2E;
                 border: 2px solid #4CAF50;
