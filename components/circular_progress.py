@@ -8,6 +8,7 @@ class CircularProgressBar(QWidget):
         super().__init__(parent)
         self.progress = 0
         self.timer_text = "00:00"
+        self.goal_text = ""
         self.setMinimumSize(300, 300)
         
         # Setting size policy to maintain aspect ratio
@@ -45,6 +46,10 @@ class CircularProgressBar(QWidget):
         self.timer_text = text
         self.update()
 
+    def setGoalText(self, text):
+        self.goal_text = text
+        self.update()
+
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -78,3 +83,11 @@ class CircularProgressBar(QWidget):
         painter.setFont(font)
         painter.setPen(QColor("#E0E0E0"))
         painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, self.timer_text)
+        
+        # Draw goal text below timer
+        if self.goal_text:
+            goal_font = painter.font()
+            goal_font.setPointSize(min(width, height) // 14)
+            painter.setFont(goal_font)
+            goal_rect = QRect(rect.x(), rect.y() + rect.height()//2, rect.width(), rect.height()//2)
+            painter.drawText(goal_rect, Qt.AlignmentFlag.AlignCenter, self.goal_text)
