@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QSizePolicy
 from PyQt6.QtCore import Qt, QRect, QSize
-from PyQt6.QtGui import QPainter, QColor, QPen, QFontDatabase
+from PyQt6.QtGui import QPainter, QColor, QPen, QFont, QFontDatabase
 import os
 
 class CircularProgressBar(QWidget):
@@ -16,6 +16,7 @@ class CircularProgressBar(QWidget):
             QSizePolicy.Policy.MinimumExpanding,
             QSizePolicy.Policy.MinimumExpanding
         )
+        self.ny_font_family = os.environ.get('POMO_NY_FONT_FAMILY', 'Arial')
 
     def hasHeightForWidth(self):
         return True
@@ -77,16 +78,16 @@ class CircularProgressBar(QWidget):
 
         # Timer text with font
         font = painter.font()
-        font.setFamily("SF Compact Display")
+        font.setFamily("SF Compact Display Regular")
         font.setPointSize(min(width, height) // 7)
         font.setBold(False)
         painter.setFont(font)
         painter.setPen(QColor("#E0E0E0"))
         painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, self.timer_text)
         
-        # Draw goal text below timer
+        # Draw goal text below timer with New York font
         if self.goal_text:
-            goal_font = painter.font()
+            goal_font = QFont(self.ny_font_family)
             goal_font.setPointSize(min(width, height) // 14)
             painter.setFont(goal_font)
             goal_rect = QRect(rect.x(), rect.y() + rect.height()//2, rect.width(), rect.height()//2)
