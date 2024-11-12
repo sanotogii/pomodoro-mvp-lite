@@ -1,20 +1,17 @@
-import sqlite3
+import sys
 from datetime import datetime
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
                             QPushButton, QSlider, QLabel, QSystemTrayIcon, 
                             QMenu, QDialog, QStackedWidget, QInputDialog, QMessageBox)
 from PyQt6.QtCore import Qt, QTimer, QRect
 from PyQt6.QtGui import QPainter, QColor, QPen, QIcon, QFontDatabase, QFont
-import win32gui
-import win32con
-import win32process
 from components.circular_progress import CircularProgressBar
 from components.stats_widget import StatsWidget
 from components.completion_dialog import CompletionDialog
 from database.db_manager import DatabaseManager
 from PyQt6.QtMultimedia import QSoundEffect
 from PyQt6.QtCore import QUrl
-import os
+import os, platform
 
 class PomodoroTimer(QMainWindow):
     def __init__(self):
@@ -233,21 +230,33 @@ class PomodoroTimer(QMainWindow):
         self.show()
         self.setWindowState((self.windowState() & ~Qt.WindowState.WindowMinimized) | Qt.WindowState.WindowActive)
         self.activateWindow()
-        # Raise window to top and force focus
         self.raise_()
-        
-        # Get the window handle
-        hwnd = self.winId().__int__()
-        
-        # Set window to foreground
-        win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0,
-                             win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
-        # Remove the topmost flag
-        win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0,
-                             win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
-        
-        # Flash the taskbar icon
-        win32gui.FlashWindow(hwnd, True)
+
+        # Platform specific window management
+        if platform.system() == 'Windows':
+            try:
+                import win32gui
+                import win32con
+                # Get the window handle
+                hwnd = self.winId().__int__()
+                # Set window to foreground
+                win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0,
+                                    win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+                # Remove the topmost flag
+                win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0,
+                                    win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+                # Flash the taskbar icon
+                win32gui.FlashWindow(hwnd, True)
+            except ImportError:
+                pass
+        elif platform.system() == 'Darwin':  # macOS
+            try:
+                from AppKit import NSApp, NSRunningApplication, NSApplicationActivateIgnoringOtherApps
+                app = NSRunningApplication.runningApplicationWithProcessIdentifier_(os.getpid())
+                app.activateWithOptions_(NSApplicationActivateIgnoringOtherApps)
+            except ImportError:
+                pass
+        # For Linux, the default Qt window activation should work fine
 
     def showCompletionDialog(self):
         dialog = CompletionDialog(self)
