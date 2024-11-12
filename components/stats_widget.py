@@ -137,7 +137,9 @@ class StatsWidget(QWidget):
         days = [(today - timedelta(days=i)) for i in range(6, -1, -1)]
         stats = [self.db.get_stats_for_date(day) for day in days]
         minutes = [stat['total_minutes'] if stat else 0 for stat in stats]
-        day_names = [day.strftime('%A') for day in days]
+        
+        # Modern date format: "Mar 18" with weekday
+        day_names = [f"{day.strftime('%b %d')}\n{day.strftime('%a')}" for day in days]
         
         # Create figure with dark theme
         fig = Figure(figsize=(8, 5), facecolor='#1E1E1E')
@@ -156,7 +158,7 @@ class StatsWidget(QWidget):
         ax.spines['left'].set_color('#E0E0E0')
         ax.tick_params(colors='#E0E0E0')
         
-        plt.setp(ax.get_xticklabels(), rotation=45, ha='right', color='#E0E0E0')
+        plt.setp(ax.get_xticklabels(), rotation=0, ha='center', color='#E0E0E0')
         
         # Add value labels using format_duration
         for bar in bars:
