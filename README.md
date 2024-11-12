@@ -1,4 +1,4 @@
-# Pomodoro Timer (Python Version)
+# Pomodoro Timer
 A fully functional Python-based Pomodoro Timer I'm using while taking my time to learn Next.js properly. This app implements a progressive Pomodoro approach - rather than strict 25-minute sessions, it adapts to your flow state and work rhythm.
 
 ## Project Context 🎯
@@ -28,7 +28,10 @@ This is my working Pomodoro timer that I'll be using while learning Next.js at m
 - Python 3.x
 - PyQt6
 - matplotlib
-- win32gui (Windows only)
+- Platform-specific dependencies:
+  - Windows: pywin32
+  - macOS: pyobjc-framework-Cocoa
+  - Linux: No additional dependencies
 
 ## Installation
 1. Clone the repository
