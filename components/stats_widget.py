@@ -86,7 +86,10 @@ class StatsWidget(QWidget):
             f"⏱️ Total Focus Time: {today_stats['total_minutes']} minutes"
         )
         
-        data = self.db.get_historical_data()
+        # Get only today's data
+        today = datetime.now().date()
+        data = [{'date': today.strftime('%Y-%m-%d'), 
+                 'total_minutes': today_stats['total_minutes']}]
         
         self.canvas.figure.clear()
         ax = self.canvas.figure.add_subplot(111)
@@ -98,7 +101,7 @@ class StatsWidget(QWidget):
         bars = ax.bar(dates, times, color='#4CAF50', alpha=0.7)
         
         # Customize the plot
-        ax.set_title('Daily Focus Time', color='#E0E0E0', pad=20, fontsize=14)
+        ax.set_title('Today\'s Focus Time', color='#E0E0E0', pad=20, fontsize=14)
         ax.set_xlabel('Date', color='#E0E0E0', labelpad=10)
         ax.set_ylabel('Minutes', color='#E0E0E0', labelpad=10)
         
@@ -113,7 +116,7 @@ class StatsWidget(QWidget):
         ax.tick_params(colors='#E0E0E0', which='both')
         plt.xticks(rotation=45, ha='right')
         
-        # Add value labels on top of bars
+        # Add value label on the bar
         for bar in bars:
             height = bar.get_height()
             ax.text(bar.get_x() + bar.get_width()/2., height,
