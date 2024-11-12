@@ -34,7 +34,7 @@ This is my working Pomodoro timer that I'll be using while learning Next.js at m
 1. Clone the repository
 2. Install dependencies:
 ```sh
-pip install PyQt6 matplotlib pywin32
+pip install -r requirements.txt
 ```
 
 ## Usage
